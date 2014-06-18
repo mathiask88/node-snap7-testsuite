@@ -1,0 +1,250 @@
+//- 
+//- Copyright (c) 2014, Mathias Küsel
+//- MIT +no-false-attribs License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
+//-
+doctype html
+html
+	include head
+	body(style="padding-top: 70px;")
+		div.navbar.navbar-default.navbar-fixed-top(role="navigation")
+			div.container
+				div.navbar-header
+					button.navbar-toggle(type="button" data-role="collapse" data-target=".navbar-collapse")
+						span.sr-only Toggle navigation
+						span.icon-bar
+						span.icon-bar
+						span.icon-bar
+					a.navbar-brand(href="/") nodeSnap7
+				div.navbar-collapse.collapse
+					ul.nav.navbar-nav
+						li.active
+							a(href="/") Client
+		div.container(style="padding: 0px;")
+			div.row
+				div.col-md-2
+					div#rackslot.row
+						div.col-md-3(style="padding: 0px 2px;")
+							input#text-rack.form-control(type="text" value="0" data-toggle="tooltip" data-placement="bottom" title="Rack" style="text-align: center;")
+						div.col-md-3(style="padding: 0px 2px;")
+							input#text-slot.form-control(type="text" value="2" data-toggle="tooltip" data-placement="bottom" title="Slot" style="text-align: center;")
+						div.col-md-6(style="padding: 0px 2px;")
+							select#sel-connect-as.form-control(data-toggle="tooltip" data-placement="bottom" title="Connect as...")
+								option(value=CONNTYPE_PG selected="selected") PG
+								option(value=CONNTYPE_OP) OP
+								option(value=CONNTYPE_BASIC) S7 BASIC
+					div#tsap.row(style="display:none;")
+						div.col-md-6
+							div.row
+								div.col-md-6(style="padding: 0px 2px;")
+									input#text-tsap-loc-0.form-control(type="text" value="02" data-toggle="tooltip" data-placement="bottom" title="Local TSAP (hex)" style="text-align: center;")
+								div.col-md-6(style="padding: 0px 2px;")
+									input#text-tsap-loc-1.form-control(type="text" value="00" data-toggle="tooltip" data-placement="bottom" title="Local TSAP (hex)" style="text-align: center;")
+						div.col-md-6
+							div.row
+								div.col-md-6(style="padding: 0px 2px;")
+									input#text-tsap-rem-0.form-control(type="text" value="02" data-toggle="tooltip" data-placement="bottom" title="Remote TSAP (hex)" style="text-align: center;")
+								div.col-md-6(style="padding: 0px 2px;")
+									input#text-tsap-rem-1.form-control(type="text" value="00" data-toggle="tooltip" data-placement="bottom" title="Remote TSAP (hex)" style="text-align: center;")
+				div.col-md-3
+					div.input-group
+						input#text-ipv4.form-control(type="text", placeholder="IPv4-Address")
+						div.input-group-btn
+							button#btn-connect.btn.btn-default(type="button") Connect
+							button#btn-connect-dropdown.btn.btn-default.dropdown-toggle(data-toggle="dropdown")
+								span.caret
+								span.sr-only Toggle Drowdown
+							ul.dropdown-menu(role="menu")
+								li
+									a#btn-rackslot(href="#") Rack/Slot
+								li
+									a#btn-tsap(href="#") TSAP
+				div.col-md-7(style="padding-left:0px;")
+					div#msg-panel.alert.alert-danger(style="height: 35px; padding: 7px; margin: 0px;") Not connected :(
+					div#msg-popup(style="z-index: 1001; position: absolute; display: none;")
+						table#msg-popup-table.table
+
+			div.row
+				div.col-md-12
+					p
+			ul#subnav.nav.nav-pills
+				li.active
+					a#scanDevices(href="#") Scan
+				li
+					a#systemInfo(href="#") System Info
+				li
+					a#dataRW(href="#") Data read/write
+				li
+					a#multiRW(href="#") Multi read/write
+				li
+					a#directory(href="#") Directory
+				li
+					a#blockUPDownload(href="#") Block Up-/Download
+				li
+					a#blockDBGetFill(href="#") Block DB Get/Fill
+				li
+					a#readSZL(href="#") Read SZL
+				li
+					a#datetime(href="#") Date/Time
+				li
+					a#control(href="#") Control
+				li
+					a#security(href="#") Security
+			div.container
+				img#loader.center-block.hidden(src="/inc/ajax-loader.gif")
+			p
+			div.container#main(style="padding: 0px;")
+
+		script.
+			var snap7LogArr = [];
+			var snap7log = null;
+
+			$(document).ready(function() {
+				snap7log = function(msg, verbose){
+					if(msg == '') return;
+					verbose = verbose || 'info';
+					msg = '[' + (new Date).toLocaleTimeString() + '] ' + msg;
+					snap7LogArr.unshift({'msg': msg, 'verbose': verbose});
+					snap7LogArr = snap7LogArr.slice(0, 5);
+
+					$('#msg-panel').text(msg).removeClass(function (index, css) {
+						return (css.match (/\alert-\S+/g) || []).join(' ');
+					}).addClass('alert-'+verbose);
+
+					$('#msg-popup-table').empty();
+					for(var i=1; i<snap7LogArr.length; i++){
+						$('#msg-popup-table').append('<tr class="text-' + snap7LogArr[i].verbose +' ' + snap7LogArr[i].verbose +'"><td>' + snap7LogArr[i].msg + '</td></tr>') ;
+					}
+
+					$('#msg-panel').finish().fadeOut(100).fadeIn(100);
+				}
+
+				var plcDisconnect = function(){
+					socket.emit('plcDisconnect');
+				}
+
+				function connectInputDisabled(val){
+					$('#btn-connect').prop('disabled', val);
+					$('#btn-connect-dropdown').prop('disabled', val);
+					$('#text-ipv4').prop('disabled', val);
+					$('#text-rack').prop('disabled', val);
+					$('#text-slot').prop('disabled', val);
+					$('#sel-connect-as').prop('disabled', val);
+					$('#text-tsap-loc-0').prop('disabled', val);
+					$('#text-tsap-loc-1').prop('disabled', val);
+					$('#text-tsap-rem-0').prop('disabled', val);
+					$('#text-tsap-rem-1').prop('disabled', val);
+				}
+
+				var plcConnect = function(){
+					var connObj = {};
+					connObj.address = $('#text-ipv4').val();
+					connObj.tsap = $('#tsap').is(':visible');
+					if(connObj.tsap){
+						connObj.localTSAP = [$('#text-tsap-loc-0').val() , $('#text-tsap-loc-1').val()];
+						connObj.remoteTSAP = [$('#text-tsap-rem-0').val() , $('#text-tsap-rem-1').val()];
+					}else{
+						connObj.rack = $('#text-rack').val();
+						connObj.slot = $('#text-slot').val();
+						connObj.type = $('#sel-connect-as').val();
+					}
+					socket.emit('plcConnect', connObj);
+					connectInputDisabled(true);
+				}
+
+				socket.on('plcConnect_ret', function(err, execTime){
+					if(err == null){
+						snap7log(execTime + ' ms - Connected', 'success');
+						$('#btn-connect').off().on('click', plcDisconnect);
+						$('#btn-connect').text('Disconnect');
+						$('#subnav li.active a[id!="scanDevices"]').click();
+						$('#btn-connect').prop('disabled', false);
+					}
+					else{
+						snap7log(execTime + ' ms - ' + err, 'danger');
+						connectInputDisabled(false);
+					}
+				});
+
+				socket.on('plcDisconnect_ret', function(err, execTime){
+					if(err == null){
+						snap7log(execTime + ' ms - Disconnected', 'success');
+						connectInputDisabled(false);
+						$('#btn-connect').off().on('click', plcConnect);
+						$('#btn-connect').text('Connect');
+					}else{
+						snap7log(execTime + ' ms - ' + err, 'danger');
+					}
+				});
+
+				socket.on('plcConnectionStatus_ret', function(err, data){
+					$('#text-ipv4').val(data.address);
+					$('#text-rack').val(data.rack);
+					$('#text-slot').val(data.slot);
+					$('#sel-connect-as').val(data.type);
+					$('#text-tsap-loc-0').val(data.localTSAP[0]);
+					$('#text-tsap-loc-1').val(data.localTSAP[1]);
+					$('#text-tsap-rem-0').val(data.remoteTSAP[0]);
+					$('#text-tsap-rem-1').val(data.remoteTSAP[1]);
+					if(data.tsap)
+						$('#btn-tsap').click();
+					if(data.connected){
+						connectInputDisabled(true);
+						$('#btn-connect').off().on('click', plcDisconnect);
+						$('#btn-connect').text('Disconnect');
+						$('#btn-connect').prop('disabled', false);
+						snap7log('Connected', 'success');
+					}
+				});
+
+				socket.emit('plcConnectionStatus');
+
+				$('#msg-panel').mouseenter(function(){
+					var popup = $('#msg-popup');
+					var panel = $('#msg-panel');
+					popup.css('top', panel.css('top'));
+					popup.css('left', panel.css('left'));
+					popup.css('width', panel.css('width'));
+					popup.stop().slideDown();
+				})
+				.mouseleave(function(){
+					$('#msg-popup').stop().slideUp();
+				});
+
+				$('#btn-connect').on('click', plcConnect);
+
+				$('#subnav a').on('click', function(e) {
+					var newActive = $(this);
+					$('#loader').removeClass('hidden');
+					$('#main').load('/' + $(this).attr('id'), function(response, status, xhr){
+						$('#loader').addClass('hidden');
+						$('#subnav li').removeClass('active');
+						newActive.parent('li').addClass('active');
+						if(status == "error"){ 
+							$('#main').html('<div class="alert alert-danger">Error loading page!</div>');
+						}
+					});
+					e.preventDefault();
+				});
+
+				$('#btn-rackslot').on('click', function(e){
+					$('#tsap').hide();
+					$('#rackslot').show();
+					e.preventDefault();
+				});
+
+				$('#btn-tsap').on('click', function(e){
+					$('#rackslot').hide();
+					$('#tsap').show();
+					e.preventDefault();
+				});
+
+				$('#text-tsap-loc-0').tooltip();
+				$('#text-tsap-loc-1').tooltip();
+				$('#text-tsap-rem-0').tooltip();
+				$('#text-tsap-rem-1').tooltip();
+				$('#sel-connect-as').tooltip();
+				$('#text-rack').tooltip();
+				$('#text-slot').tooltip();
+
+				$('#scanDevices').click();
+			});

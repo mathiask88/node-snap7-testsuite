@@ -1,0 +1,84 @@
+﻿//- 
+//- Copyright (c) 2014, Mathias Küsel
+//- MIT +no-false-attribs License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
+//-
+div.row
+	div.col-md-6
+		div.panel.panel-default
+			div.panel-heading Catalog
+			div.panel-body
+				div.row
+					div.col-md-3 Order-Code
+					div#Code.col-md-5 #### ###-#####-####
+					div.col-md-2 Version
+					div.col-md-2
+						span#V1 #
+						span .
+						span#V2 #
+						span .
+						span#V3 #
+		div.panel.panel-default
+			div.panel-heading Communication Info
+			div.panel-body
+				div.row
+					div.col-md-5
+						p Max PDU size (byte)
+					div#MaxPduLengt.col-md-7 ####
+				div.row
+					div.col-md-5
+						p Max active connections
+					div#MaxConnections.col-md-7 ####
+				div.row
+					div.col-md-5
+						p Max MPI rate (bps)
+					div#MaxMpiRate.col-md-7 ####
+				div.row
+					div.col-md-5 Max comm. bus rate (bps)
+					div#MaxBusRate.col-md-7 ####
+	div.col-md-6
+		div.panel.panel-default
+			div.panel-heading Unit Info
+			div.panel-body
+				div.row
+					div.col-md-4
+						p Module Type Name
+					div#ModuleTypeName.col-md-8 ####
+				div.row
+					div.col-md-4
+						p Serial Number
+					div#SerialNumber.col-md-8 ####
+				div.row
+					div.col-md-4
+						p Vendor Copyright
+					div#Copyright.col-md-8 ####
+				div.row
+					div.col-md-4
+						p AS Name
+					div#ASName.col-md-8 ####
+				div.row
+					div.col-md-4 Module Name
+					div#ModuleName.col-md-8 ####
+script.
+	$(document).ready(function() {
+		var onData = function(err, data, execTime){
+			var msgExecTime = '';
+			if(execTime) msgExecTime = execTime + ' ms - ';
+			if(err == null){
+				for(var prop in data)
+					$('#'+prop).text(data[prop]);
+				snap7log(msgExecTime + 'System Info OK', 'success');
+			}else{
+				snap7log(msgExecTime + err, 'danger');
+			}
+		}
+		socket.removeAllListeners('plcGetCpuInfo_ret');
+		socket.removeAllListeners('plcGetCpInfo_ret');
+		socket.removeAllListeners('plcGetOrderCode_ret');
+		socket.on('plcGetCpuInfo_ret', onData);
+		socket.on('plcGetCpInfo_ret', onData);
+		socket.on('plcGetOrderCode_ret', onData);
+
+		socket.emit('plcGetCpuInfo');
+		socket.emit('plcGetCpInfo');
+		socket.emit('plcGetOrderCode');
+	});
