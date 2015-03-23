@@ -1,152 +1,155 @@
-﻿//- 
-//- Copyright (c) 2014, Mathias Küsel
-//- MIT +no-false-attribs License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
+//- 
+//- Copyright (c) 2015, Mathias Küsel
+//- MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
 //-
 div.row
-	div.col-md-10
-		h3 Buffer Content
-		table#buffer.table
-	div.col-md-2
-		div.well.well-sm
-			div.form-group
-				label(for="buffLen") Buffer Length
-				input.form-control(type="text", id="buffLen", value="256")
-			button#createBuffer.btn.btn-default.btn-block(type="button") Create Buffer
-			button#randomBuffer.btn.btn-default.btn-block(type="button") Random Buffer
-		div.well.well-sm
-			div.form-group
-				label(for="area") Area
-				select.form-control(id="area")
-					option(value=S7AreaDB selected="selected") DB
-					option(value=S7AreaPE) Digital Inputs
-					option(value=S7AreaPA) Digital Outputs
-					option(value=S7AreaMK) Merkers
-					option(value=S7AreaTM) Timers
-					option(value=S7AreaCT) Counters
-			div.form-group
-				label(for="dbnumber") DB Number
-				input.form-control(type="text", id="dbnumber", value="1")
-			div.form-group
-				label(for="start") Start
-				input.form-control(type="text", id="start",  value="0")
-			div.form-group
-				label(for="amount") Amount
-				input.form-control(type="text", id="amount", value="1")
-			div.form-group
-				label(for="wordlen") WordLen
-				select.form-control(id="wordlen")
-					option(value=S7WLBit) S7WLBit
-					option(value=S7WLByte selected="selected") S7WLByte
-					option(value=S7WLWord) S7WLWord
-					option(value=S7WLDWord) S7WLDWord
-					option(value=S7WLReal) S7WLReal
-					option(value=S7WLCounter) S7WLCounter
-					option(value=S7WLTimer) S7WLTimer
-			p
-				button#read.btn.btn-default.btn-block(type="button") Read
-				button#write.btn.btn-default.btn-block(type="button") Write
-		
+  div.col-md-10
+    h3 Buffer Content
+    table#buffer.table
+  div.col-md-2
+    div.well.well-sm
+      div.form-group
+        label(for="buffLen") Buffer Length
+        input.form-control(type="text", id="buffLen", value="256")
+      button#createBuffer.btn.btn-default.btn-block(type="button") Create Buffer
+      button#randomBuffer.btn.btn-default.btn-block(type="button") Random Buffer
+    div.well.well-sm
+      div.form-group
+        label(for="area") Area
+        select.form-control(id="area")
+          option(value=S7AreaDB selected="selected") DB
+          option(value=S7AreaPE) Digital Inputs
+          option(value=S7AreaPA) Digital Outputs
+          option(value=S7AreaMK) Merkers
+          option(value=S7AreaTM) Timers
+          option(value=S7AreaCT) Counters
+      div.form-group
+        label(for="dbnumber") DB Number
+        input.form-control(type="text", id="dbnumber", value="1")
+      div.form-group
+        label(for="start") Start
+        input.form-control(type="text", id="start",  value="0")
+      div.form-group
+        label(for="amount") Amount
+        input.form-control(type="text", id="amount", value="1")
+      div.form-group
+        label(for="wordlen") WordLen
+        select.form-control(id="wordlen")
+          option(value=S7WLBit) S7WLBit
+          option(value=S7WLByte selected="selected") S7WLByte
+          option(value=S7WLWord) S7WLWord
+          option(value=S7WLDWord) S7WLDWord
+          option(value=S7WLReal) S7WLReal
+          option(value=S7WLCounter) S7WLCounter
+          option(value=S7WLTimer) S7WLTimer
+      p
+        button#read.btn.btn-default.btn-block(type="button") Read
+        button#write.btn.btn-default.btn-block(type="button") Write
+    
 script.
-	$(document).ready(function() {
-		function createBufferTable(len, data){
-			$('#buffer').empty();
+  $(document).ready(function() {
+    function createBufferTable(len, data){
+      $('#buffer').empty();
 
-			var zeroFillCount = parseInt(len, 10).toString(16).length;
-			var content = '<thead><tr><th></th>';
-			for(var i=0; i<=15; i++){
-				content += '<th>&nbsp;0' + Number(i).toString(16).toUpperCase() + '</th>';
-			}
-			content += '</tr></thead><tbody>';
-			var maxRows = Math.ceil(len/16);
-			for(var i=0; i<maxRows; i++){
-				content += '<tr><td><b>' + (Array(zeroFillCount).join('0') + Number(i*16).toString(16).toUpperCase()).slice(-zeroFillCount) + '</b></td>';
-				var maxCols = 15;
-				if((maxRows - 1) == i)
-					if((maxCols = (len % 16)-1) == -1)
-						maxCols = 15;
-				for(var j=0; j<=maxCols; j++)
-					content += '<td><input type="text" name="'+Number(i*16+j).toString(16).toUpperCase()+'" maxlength="2" value="' + (data && data[i*16+j] ? ('0'+data[i*16+j].toString(16).toUpperCase()).slice(-2) : '00') + '" style="width: 25px; text-align: center; border:0px;"></td>';
-				content += '</tr>';
-			}
-			content += '</tbody>';
-			$('#buffer').append(content);
-			$('#buffer :input').on('focusout', function(){
-				var val = $(this).val()
-				if((val.trim() == '') || (!val.match(/[0-9a-f]{2}/i)))
-					$(this).val('00');
-				else
-					$(this).val(val.toUpperCase());
-			});
-		}
+      var zeroFillCount = parseInt(len, 10).toString(16).length;
+      var content = '<thead><tr><th></th>';
+      for(var i=0; i<=15; i++){
+        content += '<th>&nbsp;0' + Number(i).toString(16).toUpperCase() + '</th>';
+      }
+      content += '</tr></thead><tbody>';
+      var maxRows = Math.ceil(len/16);
+      for(var i=0; i<maxRows; i++){
+        content += '<tr><td><b>' + (Array(zeroFillCount).join('0') + Number(i*16).toString(16).toUpperCase()).slice(-zeroFillCount) + '</b></td>';
+        var maxCols = 15;
+        if((maxRows - 1) == i)
+          if((maxCols = (len % 16)-1) == -1)
+            maxCols = 15;
+        for(var j=0; j<=maxCols; j++)
+          content += '<td><input type="text" name="'+Number(i*16+j).toString(16).toUpperCase()+'" maxlength="2" value="' + (data && data[i*16+j] ? ('0'+data[i*16+j].toString(16).toUpperCase()).slice(-2) : '00') + '" style="width: 25px; text-align: center; border:0px;"></td>';
+        content += '</tr>';
+      }
+      content += '</tbody>';
 
-		var onData = function(err, data, execTime){
-			var msgExecTime = '';
-			if(execTime) msgExecTime = execTime + ' ms - ';
-			if(err == null){
-				if(data)
-					createBufferTable(data.length, data);
-				snap7log(msgExecTime + 'Data read/write OK', 'success');
-			}else{
-				snap7log(msgExecTime + err, 'danger');
-			}
-		}
-		socket.removeAllListeners('readArea_ret');
-		socket.removeAllListeners('getRandomBuffer_ret');
-		socket.on('readArea_ret', onData);
-		socket.on('writeArea_ret', onData);
-		socket.on('getRandomBuffer_ret', onData);
+      $('#buffer').append(content);
+      $('#buffer :input').on('focusout', function(){
+        var val = $(this).val()
+        if((val.trim() == '') || (!val.match(/[0-9a-f]{2}/i)))
+          $(this).val('00');
+        else
+          $(this).val(val.toUpperCase());
+      });
+    }
 
-		$('#createBuffer').off().on('click', function(){
-			createBufferTable(parseInt($('#buffLen').val(), 10));
-		});
+    var onData = function(err, data, execTime){
+      var msgExecTime = '';
+      if(execTime) msgExecTime = execTime + ' ms - ';
 
-		$('#randomBuffer').off().on('click', function(){
-			socket.emit('getRandomBuffer', parseInt($('#buffLen').val(), 10));
-		});
+      if(err == null){
+        if(data){
+          createBufferTable(data.length, data);
+        }
+        snap7log(msgExecTime + 'Data read/write OK', 'success');
+      }else{
+        snap7log(msgExecTime + err, 'danger');
+      }
+    }
+    socket.removeAllListeners('readArea_ret');
+    socket.removeAllListeners('getRandomBuffer_ret');
+    socket.on('readArea_ret', onData);
+    socket.on('writeArea_ret', onData);
+    socket.on('getRandomBuffer_ret', onData);
 
-		$('#read').off().on('click', function(){
-			var area = $('#area :selected').val();
-			var DB = $('#dbnumber').val();
-			var start = $('#start').val();
-			var amount = $('#amount').val();
-			var wordLen = $('#wordlen :selected').val();
+    $('#createBuffer').off().on('click', function(){
+      createBufferTable(parseInt($('#buffLen').val(), 10));
+    });
 
-			socket.emit('readArea', {'area': +area, 'DB': +DB, 'start': +start, 'amount': +amount, 'wordLen': +wordLen});
-		});
+    $('#randomBuffer').off().on('click', function(){
+      socket.emit('getRandomBuffer', parseInt($('#buffLen').val(), 10));
+    });
 
-		$('#write').off().on('click', function(){
-			var area = $('#area :selected').val();
-			var DB = $('#dbnumber').val();
-			var start = $('#start').val();
-			var amount = $('#amount').val();
-			var wordLen = $('#wordlen').val();
-			var formArray = $('#buffer :input').serializeArray();
-			var buffer = [];
-			for(var i=0; i<formArray.length; i++){
-				buffer[i] = parseInt(formArray[i].value, 16);
-			}
-			socket.emit('writeArea', {'area': +area, 'DB': +DB, 'start': +start, 'amount': +amount, 'wordLen': +wordLen, 'buffer': buffer});
-		});
+    $('#read').off().on('click', function(){
+      var area = $('#area :selected').val();
+      var DB = $('#dbnumber').val();
+      var start = $('#start').val();
+      var amount = $('#amount').val();
+      var wordLen = $('#wordlen :selected').val();
 
-		$('#area').on('change', function(){
-			$('#dbnumber').prop('disabled', ($(this).val() != !{S7AreaDB}));
-			if($(this).val() == !{S7AreaTM}){
-				$('#wordlen').prop('disabled', true);
-				$('#wordlen').val(!{S7WLTimer});
-			}else if($(this).val() == !{S7AreaCT}){
-				$('#wordlen').prop('disabled', true);
-				$('#wordlen').val(!{S7WLCounter});
-			}else
-				$('#wordlen').prop('disabled', false);
-		});
+      socket.emit('readArea', {'area': +area, 'DB': +DB, 'start': +start, 'amount': +amount, 'wordLen': +wordLen});
+    });
 
-		$('#wordlen').on('change', function(){
-			if($(this).val() == !{S7WLBit}){
-				$('#amount').prop('disabled', true);
-				$('#amount').val('1');
-			}else
-				$('#amount').prop('disabled', false);
-		});
+    $('#write').off().on('click', function(){
+      var area = $('#area :selected').val();
+      var DB = $('#dbnumber').val();
+      var start = $('#start').val();
+      var amount = $('#amount').val();
+      var wordLen = $('#wordlen').val();
+      var formArray = $('#buffer :input').serializeArray();
+      var buffer = [];
+      for(var i=0; i<formArray.length; i++){
+        buffer[i] = parseInt(formArray[i].value, 16);
+      }
+      socket.emit('writeArea', {'area': +area, 'DB': +DB, 'start': +start, 'amount': +amount, 'wordLen': +wordLen, 'buffer': buffer});
+    });
 
-		createBufferTable(0);
-	});
+    $('#area').on('change', function(){
+      $('#dbnumber').prop('disabled', ($(this).val() != !{S7AreaDB}));
+      if($(this).val() == !{S7AreaTM}){
+        $('#wordlen').prop('disabled', true);
+        $('#wordlen').val(!{S7WLTimer});
+      }else if($(this).val() == !{S7AreaCT}){
+        $('#wordlen').prop('disabled', true);
+        $('#wordlen').val(!{S7WLCounter});
+      }else
+        $('#wordlen').prop('disabled', false);
+    });
+
+    $('#wordlen').on('change', function(){
+      if($(this).val() == !{S7WLBit}){
+        $('#amount').prop('disabled', true);
+        $('#amount').val('1');
+      }else
+        $('#amount').prop('disabled', false);
+    });
+
+    createBufferTable(0);
+  });

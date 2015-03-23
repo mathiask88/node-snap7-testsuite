@@ -20,10 +20,10 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "async": "^0.9.0",
-    "compression": "^1.0.7",
-    "express": "^4.4.3",
-    "jade": "^1.3.1",
-    "node-snap7": "^0.1.2",
-    "socket.io": "^1.0.5"
+    "compression": "^1.4.3",
+    "express": "^4.12.3",
+    "jade": "^1.9.2",
+    "node-snap7": "mathiask88/node-snap7",
+    "socket.io": "^1.3.5"
   }
 }

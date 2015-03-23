@@ -1,3 +1,3 @@
-﻿# nodeSnap7-test
+# nodeSnap7-test
 
 

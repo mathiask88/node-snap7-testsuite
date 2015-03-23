@@ -1,60 +1,60 @@
-﻿//- 
-//- Copyright (c) 2014, Mathias Küsel
-//- MIT +no-false-attribs License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
+//- 
+//- Copyright (c) 2015, Mathias Küsel
+//- MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
 //-
 div.row
-	div.col-md-2
-	div.col-md-6
-		div.panel.panel-default
-			div.panel-heading Scan Results
-			div.panel-body(style="display: none;")
-				div#progress.progress(style="margin-bottom: 0px;")
-					div.progress-bar(role="progressbar", aria-valuenow="0", aria-valuemin="0", aria-valuemax="100", style="width: 0%;") 0%
-			table#ip-res.table.table-striped
-				thead
-					tr
-						th Port
-						th IP
-				tbody
-	div.col-md-2
-		div.well.well-sm
-			div.form-group
-				label(for="text-ipv4-start") Start IP
-				input.form-control(type="text", id="text-ipv4-start", placeholder="Start IPv4", value=startIPv4[0])
-			div.form-group
-				label(for="text-ipv4-end") End IP
-				input.form-control(type="text", id="text-ipv4-end", placeholder="End IPv4", value=endIPv4[0])
-			div.form-group
-				label(for="text-port") Port
-				input.form-control(type="text", id="text-port", placeholder="Port", value="102")
-			p
-				button#btn-scan.btn.btn-default.btn-block(type="button") Scan
+  div.col-md-2
+  div.col-md-6
+    div.panel.panel-default
+      div.panel-heading Scan Results
+      div.panel-body(style="display: none;")
+        div#progress.progress(style="margin-bottom: 0px;")
+          div.progress-bar(role="progressbar", aria-valuenow="0", aria-valuemin="0", aria-valuemax="100", style="width: 0%;") 0%
+      table#ip-res.table.table-striped
+        thead
+          tr
+            th Port
+            th IP
+        tbody
+  div.col-md-2
+    div.well.well-sm
+      div.form-group
+        label(for="text-ipv4-start") Start IP
+        input.form-control(type="text", id="text-ipv4-start", placeholder="Start IPv4", value=startIPv4[0])
+      div.form-group
+        label(for="text-ipv4-end") End IP
+        input.form-control(type="text", id="text-ipv4-end", placeholder="End IPv4", value=endIPv4[0])
+      div.form-group
+        label(for="text-port") Port
+        input.form-control(type="text", id="text-port", placeholder="Port", value="102")
+      p
+        button#btn-scan.btn.btn-default.btn-block(type="button") Scan
 script.
-	$(document).ready(function() {
-		socket.removeAllListeners('scanIP_ret');
-		socket.on('scanIP_ret', function(err, res){
-			$('#ip-res tbody').prepend('<tr><td>' + res.port + '</td><td><a href="#">' + res.host + '</a></td></tr>');
-			$('#ip-res tbody a').off().on('click', function(e){
-				$('#text-ipv4').val($(this).text());
-				e.preventDefault();
-			});
-		});
+  $(document).ready(function() {
+    socket.removeAllListeners('scanIP_ret');
+    socket.on('scanIP_ret', function(err, res){
+      $('#ip-res tbody').prepend('<tr><td>' + res.port + '</td><td><a href="#">' + res.host + '</a></td></tr>');
+      $('#ip-res tbody a').off().on('click', function(e){
+        $('#text-ipv4').val($(this).text());
+        e.preventDefault();
+      });
+    });
 
-		socket.removeAllListeners('scanIP_status');
-		socket.on('scanIP_status', function(err, res){
-			var progress = $('#progress .progress-bar');
-			var percent = Math.round((res.curr/res.max)*100);
-			progress.css('width', percent + '%').attr('aria-valuenow', percent).text(percent + '%');
-			if(percent == 100){
-				$('#progress').parent('div').delay(1000).slideUp();
-				$('#btn-scan').prop('disabled', false);
-			}
-		});
-		
-		$('#btn-scan').off().on('click', function(){
-			$(this).prop('disabled', true);
-			$('#ip-res tbody').empty();
-			$('#progress').parent('div').slideDown();
-			socket.emit('scanIP', {'start': $('#text-ipv4-start').val(), 'end': $('#text-ipv4-end').val(), 'port': parseInt($('#text-port').val(), 10)});
-		});
-	});
+    socket.removeAllListeners('scanIP_status');
+    socket.on('scanIP_status', function(err, res){
+      var progress = $('#progress .progress-bar');
+      var percent = Math.round((res.curr/res.max)*100);
+      progress.css('width', percent + '%').attr('aria-valuenow', percent).text(percent + '%');
+      if(percent == 100){
+        $('#progress').parent('div').delay(1000).slideUp();
+        $('#btn-scan').prop('disabled', false);
+      }
+    });
+    
+    $('#btn-scan').off().on('click', function(){
+      $(this).prop('disabled', true);
+      $('#ip-res tbody').empty();
+      $('#progress').parent('div').slideDown();
+      socket.emit('scanIP', {'start': $('#text-ipv4-start').val(), 'end': $('#text-ipv4-end').val(), 'port': parseInt($('#text-port').val(), 10)});
+    });
+  });

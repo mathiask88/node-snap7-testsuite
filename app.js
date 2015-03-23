@@ -1,6 +1,6 @@
-﻿/* 
- * Copyright (c) 2014, Mathias Küsel
- * MIT +no-false-attribs License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
+/* 
+ * Copyright (c) 2015, Mathias Küsel
+ * MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
  */
 
 /**
@@ -22,16 +22,14 @@ var m_routes = require('./routes.js');
 /**
  * Config/Constants
  */
-var
-    HTTP_PORT = process.env.PORT || 8080;
+var HTTP_PORT = process.env.PORT || 8080;
 
 /**
  * Initialize variables
  */
-var
-    app = m_express(),
-    server = m_http.createServer(app),
-    io = m_socketio(server);
+var app = m_express();
+var server = m_http.createServer(app);
+var io = m_socketio(server);
 
 /**
  * Express config
@@ -58,6 +56,6 @@ io.on('connection', m_socketEvents.onConnect);
 /**
  * Start HTTP server on specific port
  */
-server.listen(HTTP_PORT, function () {
-    console.log('Webserver running on port ' + HTTP_PORT);
+server.listen(HTTP_PORT, function() {
+  console.log('Webserver running on port ' + HTTP_PORT);
 });
