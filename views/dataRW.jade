@@ -1,4 +1,4 @@
-//- 
+//-
 //- Copyright (c) 2015, Mathias Küsel
 //- MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
 //-
@@ -45,7 +45,7 @@ div.row
       p
         button#read.btn.btn-default.btn-block(type="button") Read
         button#write.btn.btn-default.btn-block(type="button") Write
-    
+
 script.
   $(document).ready(function() {
     function createBufferTable(len, data){
@@ -83,6 +83,7 @@ script.
     var onData = function(err, data, execTime){
       var msgExecTime = '';
       if(execTime) msgExecTime = execTime + ' ms - ';
+      if(data && data.type === 'Buffer') data = data.data;
 
       if(err == null){
         if(data){

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2015, Mathias Küsel
  * MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
  */
@@ -31,11 +31,11 @@ var connectionParams = {
  */
 module.exports.onConnect = function(socket) {
   console.log('Socket connected.');
-  
+
   socket.on('disconnect', function() {
     console.log('Socket disconnected.');
   });
-  
+
   socket.on('plcConnect', function(data) {
     var onConnect = function(err) {
       if (err)
@@ -55,32 +55,32 @@ module.exports.onConnect = function(socket) {
         socket.emit('plcConnect_ret', null, snap7Client.ExecTime());
       }
     }
-    
+
     if (data.tsap) {
       if (!snap7Client.SetConnectionParams(data.address, parseInt(data.localTSAP.join(''), 16), parseInt(data.remoteTSAP.join(''), 16)))
         return socket.emit('plcConnect_ret', snap7Client.ErrorText(err), snap7Client.ExecTime());
-      
+
       snap7Client.Connect(onConnect);
     } else {
       if (!snap7Client.SetConnectionType(parseInt(data.type), 10))
         return socket.emit('plcConnect_ret', snap7Client.ErrorText(err), snap7Client.ExecTime());
-      
+
       snap7Client.ConnectTo(data.address, parseInt(data.rack, 10), parseInt(data.slot, 10), onConnect);
     }
   });
-  
+
   socket.on('plcDisconnect', function(data) {
     if (snap7Client.Disconnect())
       socket.emit('plcDisconnect_ret', null, snap7Client.ExecTime());
     else
       socket.emit('plcDisconnect_ret', snap7Client.ErrorText(snap7Client.LastError()), snap7Client.ExecTime());
   });
-  
+
   socket.on('plcConnectionStatus', function() {
     connectionParams.connected = snap7Client.Connected();
     socket.emit('plcConnectionStatus_ret', null, connectionParams);
   });
-  
+
   socket.on('plcGetCpuInfo', function() {
     var cpuInfo;
     if (cpuInfo = snap7Client.GetCpuInfo())
@@ -88,7 +88,7 @@ module.exports.onConnect = function(socket) {
     else
       socket.emit('plcGetCpuInfo_ret', snap7Client.ErrorText(snap7Client.LastError()), null, snap7Client.ExecTime());
   });
-  
+
   socket.on('plcGetCpInfo', function() {
     var cpInfo;
     if (cpInfo = snap7Client.GetCpInfo())
@@ -96,7 +96,7 @@ module.exports.onConnect = function(socket) {
     else
       socket.emit('plcGetCpInfo_ret', snap7Client.ErrorText(snap7Client.LastError()), null, snap7Client.ExecTime());
   });
-  
+
   socket.on('plcGetOrderCode', function() {
     var orderCode;
     if (orderCode = snap7Client.GetOrderCode())
@@ -104,7 +104,7 @@ module.exports.onConnect = function(socket) {
     else
       socket.emit('plcGetOrderCode_ret', snap7Client.ErrorText(snap7Client.LastError()), null, snap7Client.ExecTime());
   });
-  
+
   socket.on('readArea', function(data) {
     snap7Client.ReadArea(data.area, data.DB, data.start, data.amount, data.wordLen, function(err, res) {
       if (err)
@@ -113,7 +113,7 @@ module.exports.onConnect = function(socket) {
         socket.emit('readArea_ret', null, res.toJSON(), snap7Client.ExecTime());
     });
   });
-  
+
   socket.on('writeArea', function(data) {
     snap7Client.WriteArea(data.area, data.DB, data.start, data.amount, data.wordLen, new Buffer(data.buffer), function(err) {
       if (err)
@@ -122,24 +122,24 @@ module.exports.onConnect = function(socket) {
         socket.emit('writeArea_ret', null, null, snap7Client.ExecTime());
     });
   });
-  
+
   socket.on('getRandomBuffer', function(len) {
     socket.emit('getRandomBuffer_ret', null, m_crypto.randomBytes(len).toJSON());
   });
-  
+
   socket.on('scanIP', function(data) {
     function checkPort(port, host, callback) {
       var sock = new m_net.Socket(), status = null;
-      
+
       sock.on('connect', function() { status = 'open'; sock.end(); });
       sock.setTimeout(1500);
       sock.on('timeout', function() { status = 'closed'; sock.destroy(); });
       sock.on('error', function(exception) { status = 'closed'; });
       sock.on('close', function(exception) { callback(null, status, host, port); });
-      
+
       sock.connect(port, host);
     }
-    
+
     var startIP = data.start.split('.').map(function(item) { return parseInt(item, 10); });
     var endIP = data.end.split('.').map(function(item) { return parseInt(item, 10); });
     var tasks = [];
@@ -160,7 +160,7 @@ module.exports.onConnect = function(socket) {
     var requestCount = tasks.length;
     var currentRequestCount = 0;
     socket.emit('scanIP_status', null, { 'curr': currentRequestCount, 'max': requestCount });
-    
+
     m_async.parallelLimit(tasks.map(function(ip) {
       return m_async.waterfall.bind(m_async, [
         function(callback) {

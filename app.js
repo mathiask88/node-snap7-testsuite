@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2015, Mathias Küsel
  * MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
  */

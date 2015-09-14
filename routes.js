@@ -59,7 +59,7 @@ module.exports.scanDevices = function(req, res) {
     ip[3] = '1';
     return ip.join('.');
   });
-  
+
   var endAddresses = addresses.map(function(ip) {
     ip = ip.split('.');
     ip[3] = '255';
