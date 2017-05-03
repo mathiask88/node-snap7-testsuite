@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Mathias Küsel
+ * Copyright (c) 2017, Mathias Küsel
  * MIT License <https://github.com/mathiask88/node-snap7-testsuite/blob/master/LICENSE>
  */
 
@@ -34,7 +34,7 @@ var io = m_socketio(server);
 /**
  * Express config
  */
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 app.set('views', m_path.join(__dirname, 'views'));
 
 app.use(m_compress);
